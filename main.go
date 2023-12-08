@@ -9,27 +9,16 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-type ktype int
+type ktype string
 
 const (
-	deployment ktype = iota
-	cronjob
+	deployment ktype = "deployment"
+	cronjob    ktype = "cronjob"
 )
 
 type kobject struct {
 	kind ktype
 	name string
-}
-
-func (k ktype) String() string {
-	switch k {
-	case deployment:
-		return "deployment"
-	case cronjob:
-		return "cronjob"
-	default:
-		return "undefined"
-	}
 }
 
 func addToRequests(k ktype, s []string, r []kobject) []kobject {
@@ -45,9 +34,9 @@ func addToRequests(k ktype, s []string, r []kobject) []kobject {
 
 func printChangeCause(r []kobject) error {
 	for _, o := range r {
-		out, err := exec.Command("kubectl", "get", o.kind.String(), o.name, "-o", "jsonpath={.metadata.annotations.kubernetes\\.io/change-cause}").Output()
+		out, err := exec.Command("kubectl", "get", string(o.kind), o.name, "-o", "jsonpath={.metadata.annotations.kubernetes\\.io/change-cause}").Output()
 		if err != nil {
-			return fmt.Errorf("cannot print %s %s change cause: %v", o.kind.String(), o.name, err)
+			return fmt.Errorf("cannot print %s %s change cause: %v", o.kind, o.name, err)
 		}
 		fmt.Println(string(out))
 	}
